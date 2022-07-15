@@ -1,0 +1,26 @@
+FROM brandondbest/laravel-web:8.1
+
+RUN apk add npm
+
+# Opcache
+RUN sed -E -i -e 's/opcache.enable=0/opcache.enable=1/' /usr/local/etc/php/conf.d/opcache.ini \
+    && sed -E -i -e 's/opcache.enable_cli=0/opcache.enable_cli=1/' /usr/local/etc/php/conf.d/opcache.ini \
+    && sed -E -i -e 's/opcache.memory_consumption=192/opcache.memory_consumption=192/' /usr/local/etc/php/conf.d/opcache.ini \
+    # Determine how many files does your project have? find . -type f -print | grep php | wc -l
+    # The actual value used will be the first number in the set of prime numbers
+    #   { 223, 463, 983, 1979, 3907, 7963, 16229, 32531, 65407, 130987 } that is greater than or equal to the configured value
+    && sed -E -i -e 's/opcache.max_accelerated_files=1000000/opcache.max_accelerated_files=32531/' /usr/local/etc/php/conf.d/opcache.ini \
+    # development, keep 1
+    # production, keep 0
+    && sed -E -i -e 's/opcache.validate_timestamps=0/opcache.validate_timestamps=1/' /usr/local/etc/php/conf.d/opcache.ini
+
+RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
+      && pecl install redis \
+      && docker-php-ext-enable redis \
+      && apk del pcre-dev ${PHPIZE_DEPS} \
+      && rm -rf /tmp/pear
+
+RUN touch /tmp/database.sqlite
+
+RUN rm -rf /etc/nginx/http.d/*
+COPY ./_deploy/local/etc/nginx/saas.conf /etc/nginx/http.d/saas.conf

@@ -1,0 +1,26 @@
+version: '3.1'
+services:
+    brandonbest:
+        container_name: brandonbest
+        build:
+            context: ../..
+            dockerfile: ./_deploy/local/dockerfile
+        environment:
+            DB_HOST: ${DB_HOST:-mysql}
+            VIRTUAL_HOST: ${VIRTUAL_HOST:-docker-local.brandonbest.test}
+            VIRTUAL_PORT: ${VIRTUAL_PORT:-3100}
+        external_links:
+            - ${REDIS_HOST:-redis}:${REDIS_HOST:-redis}
+            - ${DB_HOST:-mysql}:${DB_HOST:-mysql}
+        ports:
+            - ${VIRTUAL_PORT:-3106}:${VIRTUAL_PORT:-3100}
+        restart: on-failure
+        volumes:
+            - ${DATA_DIR:-~/Sites/docker-local.brandonbest.test}:/app:delegated
+        working_dir: /app
+
+# Networks
+networks:
+    default:
+        external:
+            name: nginx-proxy

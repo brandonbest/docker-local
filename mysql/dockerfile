@@ -1,0 +1,3 @@
+FROM mysql/mysql-server:8.1
+
+ADD ./src/bind.cnf /etc/mysql/conf.d/bind.cnf

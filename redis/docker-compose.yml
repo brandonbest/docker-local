@@ -1,0 +1,17 @@
+version: '3.1'
+services:
+    redis:
+        build:
+            context: ./
+            dockerfile: app.dockerfile
+        container_name: 'redis'
+        ports:
+            - ${REDIS_PORT:-6379}:6379
+        restart: on-failure
+        volumes:
+            - ${DATA_DIR:~/Sites/_redis/data}:/var/lib/redis
+
+networks:
+    default:
+        external:
+            name: nginx-proxy
